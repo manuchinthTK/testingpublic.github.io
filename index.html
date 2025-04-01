@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Repo Command Executor</title>
+    <title>GitHub Command Executor</title>
     <style>
         body {
             font-family: 'Courier New', monospace;
@@ -13,10 +13,22 @@
             background-color: #0d1117;
             color: #c9d1d9;
         }
-        h1 {
-            color: #58a6ff;
-            border-bottom: 1px solid #30363d;
-            padding-bottom: 10px;
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .auth-btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .auth-btn.active {
+            background-color: #1f6feb;
         }
         .terminal {
             background-color: #161b22;
@@ -24,194 +36,128 @@
             border-radius: 6px;
             padding: 15px;
             margin-bottom: 20px;
-            min-height: 300px;
+            min-height: 200px;
         }
         #output {
             white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
             line-height: 1.5;
         }
-        .command-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+        .command-area {
+            display: none;
         }
-        .command-table th, .command-table td {
-            border: 1px solid #30363d;
-            padding: 8px 12px;
-            text-align: left;
+        .command-area.active {
+            display: block;
         }
-        .command-table th {
-            background-color: #161b22;
-            color: #58a6ff;
-        }
-        .command-table tr:nth-child(even) {
-            background-color: #161b22;
-        }
-        .command-btn {
+        .user-command {
             background-color: #238636;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
         }
-        .command-btn:hover {
-            background-color: #2ea043;
+        .root-command {
+            background-color: #da3633;
         }
-        .input-group {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        #customCommand {
-            flex-grow: 1;
+        input {
             background-color: #0d1117;
             border: 1px solid #30363d;
             color: #c9d1d9;
             padding: 8px;
-            border-radius: 4px 0 0 4px;
+            border-radius: 4px;
+            margin-right: 10px;
             font-family: 'Courier New', monospace;
         }
-        #executeBtn {
-            background-color: #1f6feb;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-        }
-        .error {
-            color: #f85149;
+        button {
+            font-family: 'Courier New', monospace;
         }
         .success {
             color: #3fb950;
         }
+        .error {
+            color: #f85149;
+        }
     </style>
 </head>
 <body>
-    <h1>GitHub Repository Command Executor</h1>
-    
-    <div class="terminal">
-        <div id="output">$ Welcome to GitHub Repo Command Executor
-$ Select a command below or enter a custom command</div>
+    <div class="auth-container">
+        <button id="userBtn" class="auth-btn active">User Mode</button>
+        <button id="rootBtn" class="auth-btn">Root Mode</button>
     </div>
-    
-    <table class="command-table">
-        <thead>
-            <tr>
-                <th>Command</th>
-                <th>Description</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><code>ls</code></td>
-                <td>List directory contents</td>
-                <td><button class="command-btn" onclick="executeCommand('ls')">Run</button></td>
-            </tr>
-            <tr>
-                <td><code>pwd</code></td>
-                <td>Print working directory</td>
-                <td><button class="command-btn" onclick="executeCommand('pwd')">Run</button></td>
-            </tr>
-            <tr>
-                <td><code>cd</code></td>
-                <td>Change directory (use custom command below)</td>
-                <td><button class="command-btn" onclick="executeCommand('cd')">Run</button></td>
-            </tr>
-            <tr>
-                <td><code>git status</code></td>
-                <td>Show repository status</td>
-                <td><button class="command-btn" onclick="executeCommand('git status')">Run</button></td>
-            </tr>
-            <tr>
-                <td><code>git branch</code></td>
-                <td>List branches</td>
-                <td><button class="command-btn" onclick="executeCommand('git branch')">Run</button></td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <div class="input-group">
-        <input type="text" id="customCommand" placeholder="Enter custom command (e.g., cd docs)">
-        <button id="executeBtn" onclick="executeCustomCommand()">Execute</button>
+
+    <div class="terminal">
+        <div id="output">$ Select a mode to begin</div>
+    </div>
+
+    <!-- User Command Area -->
+    <div id="userCommands" class="command-area active">
+        <h3>User Commands</h3>
+        <button onclick="executeUserCommand()" class="user-command">Run mypy.py (Default Sum)</button>
+    </div>
+
+    <!-- Root Command Area -->
+    <div id="rootCommands" class="command-area">
+        <h3>Root Commands</h3>
+        <input type="number" id="customNumber" placeholder="Enter a number">
+        <button onclick="executeRootCommand()" class="root-command">Run mypy.py (Custom Sum)</button>
     </div>
 
     <script>
-        // Configuration
-        const REPO_OWNER = 'your-username';
-        const REPO_NAME = 'your-repo';
-        
         // DOM Elements
         const outputEl = document.getElementById('output');
-        const customCommandEl = document.getElementById('customCommand');
-        
-        // Execute predefined command
-        function executeCommand(cmd) {
-            if (cmd === 'cd') {
-                outputEl.innerHTML += `\n$ ${cmd} <span class="error">(Please use custom command field below)</span>`;
-                customCommandEl.focus();
-                return;
-            }
-            
-            outputEl.innerHTML += `\n$ ${cmd}`;
-            simulateCommandExecution(cmd);
-        }
-        
-        // Execute custom command
-        function executeCustomCommand() {
-            const cmd = customCommandEl.value.trim();
-            if (!cmd) return;
-            
-            outputEl.innerHTML += `\n$ ${cmd}`;
-            customCommandEl.value = '';
-            simulateCommandExecution(cmd);
-        }
-        
-        // Handle Enter key in input field
-        customCommandEl.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                executeCustomCommand();
-            }
-        });
-        
-        // Simulate command execution (in a real app, this would call a backend API)
-        function simulateCommandExecution(cmd) {
-            // This is a simulation - in a real app you'd call a backend API
-            // that executes commands in your GitHub repo via GitHub Actions
-            
-            let result = '';
-            
-            // Simulate different command outputs
-            if (cmd === 'ls') {
-                result = `README.md\nscripts/\n.github/\nindex.html\n`;
-            } 
-            else if (cmd === 'pwd') {
-                result = `/home/runner/work/${REPO_NAME}/${REPO_NAME}\n`;
-            }
-            else if (cmd.startsWith('cd ')) {
-                const dir = cmd.substring(3);
-                result = `Changed directory to ${dir}\n`;
-            }
-            else if (cmd === 'git status') {
-                result = `On branch main\nYour branch is up to date with 'origin/main'.\n\nnothing to commit, working tree clean\n`;
-            }
-            else if (cmd === 'git branch') {
-                result = `* main\n  development\n  feature/new-ui\n`;
-            }
-            else {
-                result = `$ ${cmd}: command simulated\n`;
-            }
-            
-            // Display the result
-            outputEl.innerHTML += `\n<span class="success">${result}</span>$ `;
-            
-            // Auto-scroll to bottom
+        const userBtn = document.getElementById('userBtn');
+        const rootBtn = document.getElementById('rootBtn');
+        const userCommands = document.getElementById('userCommands');
+        const rootCommands = document.getElementById('rootCommands');
+        const customNumberEl = document.getElementById('customNumber');
+
+        // Current mode (default: user)
+        let currentMode = 'user';
+
+        // Mode switching
+        userBtn.addEventListener('click', () => switchMode('user'));
+        rootBtn.addEventListener('click', () => switchMode('root'));
+
+        function switchMode(mode) {
+            currentMode = mode;
+            userBtn.classList.toggle('active', mode === 'user');
+            rootBtn.classList.toggle('active', mode === 'root');
+            userCommands.classList.toggle('active', mode === 'user');
+            rootCommands.classList.toggle('active', mode === 'root');
+            outputEl.innerHTML += `\n$ Switched to ${mode} mode`;
             outputEl.scrollTop = outputEl.scrollHeight;
         }
-        
+
+        // Command execution
+        function executeUserCommand() {
+            outputEl.innerHTML += `\n$ Executing mypy.py with default values`;
+            simulateExecution('user');
+        }
+
+        function executeRootCommand() {
+            const num = customNumberEl.value;
+            if (!num) {
+                outputEl.innerHTML += `\n<span class="error">$ Error: Please enter a number</span>`;
+                return;
+            }
+            outputEl.innerHTML += `\n$ Executing mypy.py with custom value: ${num}`;
+            simulateExecution('root', num);
+        }
+
+        // Simulate command execution
+        function simulateExecution(mode, customNum = null) {
+            // Default numbers for sum
+            const a = 10;
+            const b = 20;
+            let sum;
+
+            if (mode === 'user') {
+                sum = a + b;
+                outputEl.innerHTML += `\n<span class="success">$ Result: ${a} + ${b} = ${sum}</span>`;
+            } else {
+                sum = a + b + parseInt(customNum);
+                outputEl.innerHTML += `\n<span class="success">$ Result: ${a} + ${b} + ${customNum} = ${sum}</span>`;
+            }
+
+            outputEl.innerHTML += '\n$ ';
+            outputEl.scrollTop = outputEl.scrollHeight;
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             outputEl.innerHTML += '\n$ ';
