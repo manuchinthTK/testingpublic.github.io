@@ -1,17 +1,20 @@
-from flask import Flask, request
+from flask import Flask, render_template, request
 import subprocess
 
 app = Flask(__name__)
 
-@app.route('/start-python', methods=['GET', 'POST'])  # Allow both GET & POST
-def start_python():
-    if request.method == 'POST':  # Ensure it's a POST request
-        try:
-            subprocess.run(["python", "mypy.py"], check=True)
-            return "Python script executed successfully!"
-        except subprocess.CalledProcessError:
-            return "Error executing Python script!", 500
-    return "Use POST method to start the script.", 405  # Return message if GET request is used
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+@app.route('/run_script')
+def run_script():
+    try:
+        # Execute the Python script
+        result = subprocess.run(['python', 'mypy.py'], capture_output=True, text=True)
+        return result.stdout if result.stdout else "Script executed successfully!"
+    except Exception as e:
+        return f"Error executing script: {str(e)}"
+
+if __name__ == '__main__':
+    app.run(debug=True)
