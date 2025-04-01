@@ -1,7 +1,7 @@
 # .gitignore
 
 # Exclude the entire .env directory and its contents
-.env/
+.github/env/*
 
 # Alternatively, exclude all .env files (including in subdirectories)
 *.env
