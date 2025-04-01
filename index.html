@@ -1,52 +1,221 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Python Runner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repo Command Executor</title>
     <style>
-        button { padding: 10px 15px; background: #2ea44f; color: white; border: none; cursor: pointer; }
-        #output { margin-top: 20px; padding: 15px; border: 1px solid #ddd; white-space: pre-wrap; }
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        h1 {
+            color: #58a6ff;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+        }
+        .terminal {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 300px;
+        }
+        #output {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .command-table th, .command-table td {
+            border: 1px solid #30363d;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .command-table th {
+            background-color: #161b22;
+            color: #58a6ff;
+        }
+        .command-table tr:nth-child(even) {
+            background-color: #161b22;
+        }
+        .command-btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        .command-btn:hover {
+            background-color: #2ea043;
+        }
+        .input-group {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        #customCommand {
+            flex-grow: 1;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px;
+            border-radius: 4px 0 0 4px;
+            font-family: 'Courier New', monospace;
+        }
+        #executeBtn {
+            background-color: #1f6feb;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        .error {
+            color: #f85149;
+        }
+        .success {
+            color: #3fb950;
+        }
     </style>
 </head>
 <body>
-    <h1>Python Script Runner</h1>
-    <button id="runBtn">Run Script</button>
-    <div id="output">Ready to run</div>
+    <h1>GitHub Repository Command Executor</h1>
+    
+    <div class="terminal">
+        <div id="output">$ Welcome to GitHub Repo Command Executor
+$ Select a command below or enter a custom command</div>
+    </div>
+    
+    <table class="command-table">
+        <thead>
+            <tr>
+                <th>Command</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>ls</code></td>
+                <td>List directory contents</td>
+                <td><button class="command-btn" onclick="executeCommand('ls')">Run</button></td>
+            </tr>
+            <tr>
+                <td><code>pwd</code></td>
+                <td>Print working directory</td>
+                <td><button class="command-btn" onclick="executeCommand('pwd')">Run</button></td>
+            </tr>
+            <tr>
+                <td><code>cd</code></td>
+                <td>Change directory (use custom command below)</td>
+                <td><button class="command-btn" onclick="executeCommand('cd')">Run</button></td>
+            </tr>
+            <tr>
+                <td><code>git status</code></td>
+                <td>Show repository status</td>
+                <td><button class="command-btn" onclick="executeCommand('git status')">Run</button></td>
+            </tr>
+            <tr>
+                <td><code>git branch</code></td>
+                <td>List branches</td>
+                <td><button class="command-btn" onclick="executeCommand('git branch')">Run</button></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="input-group">
+        <input type="text" id="customCommand" placeholder="Enter custom command (e.g., cd docs)">
+        <button id="executeBtn" onclick="executeCustomCommand()">Execute</button>
+    </div>
 
     <script>
-        document.getElementById('runBtn').addEventListener('click', async () => {
-            const output = document.getElementById('output');
-            output.textContent = "Starting execution...";
-
-            try {
-                const authWindow = window.open(
-                    'https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&scope=repo',
-                    'github-auth',
-                    'width=500,height=600'
-                );
-
-                const authSuccess = await new Promise(resolve => {
-                    window.addEventListener('message', (e) => {
-                        if (e.data === 'github-auth-success') resolve(true);
-                    }, { once: true });
-                });
-
-                if (authSuccess) {
-                    output.textContent = "Workflow triggered! Waiting for results...";
-                    await new Promise(r => setTimeout(r, 2000));
-                    await checkResults();
-                }
-            } catch (error) {
-                output.textContent = `Error: ${error.message}`;
+        // Configuration
+        const REPO_OWNER = 'your-username';
+        const REPO_NAME = 'your-repo';
+        
+        // DOM Elements
+        const outputEl = document.getElementById('output');
+        const customCommandEl = document.getElementById('customCommand');
+        
+        // Execute predefined command
+        function executeCommand(cmd) {
+            if (cmd === 'cd') {
+                outputEl.innerHTML += `\n$ ${cmd} <span class="error">(Please use custom command field below)</span>`;
+                customCommandEl.focus();
+                return;
+            }
+            
+            outputEl.innerHTML += `\n$ ${cmd}`;
+            simulateCommandExecution(cmd);
+        }
+        
+        // Execute custom command
+        function executeCustomCommand() {
+            const cmd = customCommandEl.value.trim();
+            if (!cmd) return;
+            
+            outputEl.innerHTML += `\n$ ${cmd}`;
+            customCommandEl.value = '';
+            simulateCommandExecution(cmd);
+        }
+        
+        // Handle Enter key in input field
+        customCommandEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                executeCustomCommand();
             }
         });
-
-        async function checkResults() {
-            const output = document.getElementById('output');
-            const response = await fetch(
-                'https://raw.githubusercontent.com/manuchinthTK/testingpublic.github.io/main/scripts/output.txt?t=' + Date.now()
-            );
-            output.textContent = await response.text();
+        
+        // Simulate command execution (in a real app, this would call a backend API)
+        function simulateCommandExecution(cmd) {
+            // This is a simulation - in a real app you'd call a backend API
+            // that executes commands in your GitHub repo via GitHub Actions
+            
+            let result = '';
+            
+            // Simulate different command outputs
+            if (cmd === 'ls') {
+                result = `README.md\nscripts/\n.github/\nindex.html\n`;
+            } 
+            else if (cmd === 'pwd') {
+                result = `/home/runner/work/${REPO_NAME}/${REPO_NAME}\n`;
+            }
+            else if (cmd.startsWith('cd ')) {
+                const dir = cmd.substring(3);
+                result = `Changed directory to ${dir}\n`;
+            }
+            else if (cmd === 'git status') {
+                result = `On branch main\nYour branch is up to date with 'origin/main'.\n\nnothing to commit, working tree clean\n`;
+            }
+            else if (cmd === 'git branch') {
+                result = `* main\n  development\n  feature/new-ui\n`;
+            }
+            else {
+                result = `$ ${cmd}: command simulated\n`;
+            }
+            
+            // Display the result
+            outputEl.innerHTML += `\n<span class="success">${result}</span>$ `;
+            
+            // Auto-scroll to bottom
+            outputEl.scrollTop = outputEl.scrollHeight;
         }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            outputEl.innerHTML += '\n$ ';
+        });
     </script>
 </body>
 </html>
