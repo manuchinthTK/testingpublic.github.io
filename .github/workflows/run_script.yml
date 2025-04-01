@@ -1,33 +1,22 @@
 name: Run Python Script
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
-    paths:
-      - 'scripts/mypy.py'
+  workflow_dispatch:  # Allow API triggering
+  push:               # Optional: auto-run on pushes
+    branches: [main]
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'
-    
-    - name: Run Python script
-      run: |
-        python scripts/mypy.py > scripts/output.txt
-        cat scripts/output.txt
-    
-    - name: Commit and push results
-      run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add scripts/output.txt
-        git commit -m "Update script output"
-        git push
+      - uses: actions/checkout@v4
+      - name: Run Python script
+        run: |
+          python scripts/mypy.py > scripts/output.txt
+      - name: Commit results
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add scripts/output.txt
+          git commit -m "Update output"
+          git push
