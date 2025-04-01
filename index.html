@@ -1,25 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Python Script Runner</title>
+    <title>Python Runner</title>
     <script src="script.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
+        body { font-family: Arial, margin: 20px; }
         button { padding: 10px 15px; font-size: 16px; }
-        #output { 
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            white-space: pre-wrap;
-            min-height: 100px;
-        }
+        #output { margin-top: 20px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
-    <h1>Python Script Runner</h1>
-    <button onclick="runScript()">Run Script via GitHub Actions</button>
-    <div id="output">Click button to run script</div>
-    
-    <p><small>Note: This triggers a GitHub Actions workflow which may take 1-2 minutes to complete.</small></p>
+    <h1>Run Python via GitHub Actions</h1>
+    <button onclick="runScript()">Run Script</button>
+    <div id="output">Click the button to run.</div>
 </body>
 </html>
