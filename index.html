@@ -2,92 +2,24 @@
 <html>
 <head>
     <title>Python Script Runner</title>
+    <script src="script.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        #output {
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        button { padding: 10px 15px; font-size: 16px; }
+        #output { 
+            margin-top: 20px;
             padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
             white-space: pre-wrap;
             min-height: 100px;
-        }
-        .error {
-            color: #d9534f;
-            border-color: #d9534f;
-            background-color: #fdf7f7;
-        }
-        .success {
-            color: #3c763d;
-            border-color: #d6e9c6;
-            background-color: #dff0d8;
         }
     </style>
 </head>
 <body>
-    <h1>Python Script Executor</h1>
-    <button id="runButton">Run mypy.py</button>
-    <div id="output">Ready to execute script...</div>
-
-    <script>
-        const runButton = document.getElementById('runButton');
-        const outputDiv = document.getElementById('output');
-        
-        async function runScript() {
-            runButton.disabled = true;
-            outputDiv.className = '';
-            outputDiv.textContent = "Executing script...";
-            
-            try {
-                const response = await fetch('/run_script');
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || `HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    outputDiv.className = 'success';
-                    outputDiv.textContent = data.output || "Script executed successfully";
-                } else {
-                    outputDiv.className = 'error';
-                    outputDiv.textContent = `Error: ${data.error}\n\n${data.stderr || ''}`;
-                }
-                
-            } catch (error) {
-                outputDiv.className = 'error';
-                outputDiv.textContent = `Failed to execute script: ${error.message}`;
-                
-            } finally {
-                runButton.disabled = false;
-            }
-        }
-        
-        runButton.addEventListener('click', runScript);
-    </script>
+    <h1>Python Script Runner</h1>
+    <button onclick="runScript()">Run Script via GitHub Actions</button>
+    <div id="output">Click button to run script</div>
+    
+    <p><small>Note: This triggers a GitHub Actions workflow which may take 1-2 minutes to complete.</small></p>
 </body>
 </html>
