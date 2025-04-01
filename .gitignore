@@ -5,12 +5,14 @@
 __pycache__/
 *.pyc
 *.pyo
+*.log
 
 # Ignore workflow logs (optional)
 .github/workflows/*.log
 
 # Ignore VSCode settings (optional)
 .vscode/
+
 
 # Ignore system files
 .DS_Store
