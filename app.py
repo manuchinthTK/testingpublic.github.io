@@ -1,54 +1,27 @@
-from flask import Flask, request
+from flask import Flask, send_file
 import subprocess
+import os
 
-app = Flask(__name__)
-
-# HTML content as a string
-HTML = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Python Script Runner</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        button { padding: 10px 15px; font-size: 16px; }
-        #output { margin-top: 20px; padding: 10px; border: 1px solid #ddd; min-height: 100px; }
-    </style>
-</head>
-<body>
-    <h1>Run Python Script</h1>
-    <button onclick="runScript()">Run mypy.py</button>
-    <div id="output">Output will appear here...</div>
-
-    <script>
-        function runScript() {
-            document.getElementById('output').textContent = "Running script...";
-            fetch('/run_script')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('output').textContent = data;
-                })
-                .catch(err => {
-                    document.getElementById('output').textContent = "Error: " + err;
-                });
-        }
-    </script>
-</body>
-</html>
-"""
+app = Flask(__name__, static_folder='.', static_url_path='')
 
 @app.route('/')
-def index():
-    return HTML
+def serve_html():
+    return send_file('index.html')
 
 @app.route('/run_script')
 def run_script():
     try:
-        result = subprocess.run(['python', 'mypy.py'], 
-                              capture_output=True, text=True)
-        return result.stdout if result.stdout else "Script executed successfully (no output)"
+        result = subprocess.run(
+            ['python', 'mypy.py'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout or "Script executed successfully (no output)"
+    except subprocess.CalledProcessError as e:
+        return f"Script failed with error:\n{e.stderr}"
     except Exception as e:
-        return f"Error executing script: {str(e)}"
+        return f"Unexpected error: {str(e)}"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
