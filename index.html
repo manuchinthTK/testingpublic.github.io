@@ -1,19 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Script Runner</title>
+    <title>Python Runner</title>
     <style>
         button { padding: 10px 15px; background: #2ea44f; color: white; border: none; cursor: pointer; }
         #output { margin-top: 20px; padding: 15px; border: 1px solid #ddd; white-space: pre-wrap; }
     </style>
 </head>
 <body>
-    <h1>Run Python Script via GitHub Actions</h1>
+    <h1>Python Script Runner</h1>
     <button id="runBtn">Run Script</button>
     <div id="output">Ready to run</div>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('runBtn').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            output.textContent = "Starting execution...";
+
+            try {
+                const authWindow = window.open(
+                    'https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&scope=repo',
+                    'github-auth',
+                    'width=500,height=600'
+                );
+
+                const authSuccess = await new Promise(resolve => {
+                    window.addEventListener('message', (e) => {
+                        if (e.data === 'github-auth-success') resolve(true);
+                    }, { once: true });
+                });
+
+                if (authSuccess) {
+                    output.textContent = "Workflow triggered! Waiting for results...";
+                    await new Promise(r => setTimeout(r, 2000));
+                    await checkResults();
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        async function checkResults() {
+            const output = document.getElementById('output');
+            const response = await fetch(
+                'https://raw.githubusercontent.com/YOUR_USERNAME/testingpublic.github.io/main/scripts/output.txt?t=' + Date.now()
+            );
+            output.textContent = await response.text();
+        }
+    </script>
 </body>
 </html>
