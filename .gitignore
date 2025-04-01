@@ -1,0 +1,13 @@
+# .gitignore
+
+# Exclude the entire .env directory and its contents
+.env/
+
+# Alternatively, exclude all .env files (including in subdirectories)
+*.env
+
+# Optional: Also exclude common IDE/editor files
+.idea/
+.vscode/
+__pycache__/
+*.pyc
