@@ -3,44 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Command Executor</title>
+    <title>Minecraft Server Control Panel</title>
     <style>
         body {
-            font-family: 'Courier New', monospace;
-            max-width: 800px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #0d1117;
-            color: #c9d1d9;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
         }
         .auth-container {
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            gap: 10px;
         }
         .auth-btn {
-            background-color: #238636;
+            background-color: #2d2d2d;
             color: white;
             border: none;
-            padding: 8px 16px;
-            margin: 0 10px;
+            padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .auth-btn:hover {
+            background-color: #3d3d3d;
         }
         .auth-btn.active {
-            background-color: #1f6feb;
+            background-color: #4CAF50;
+        }
+        .auth-btn.root {
+            background-color: #f44336;
         }
         .terminal {
-            background-color: #161b22;
-            border: 1px solid #30363d;
+            background-color: #121212;
+            border: 1px solid #333;
             border-radius: 6px;
             padding: 15px;
             margin-bottom: 20px;
             min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
         }
         #output {
             white-space: pre-wrap;
             line-height: 1.5;
+            font-family: 'Courier New', monospace;
         }
         .command-area {
             display: none;
@@ -48,70 +58,197 @@
         .command-area.active {
             display: block;
         }
-        .user-command {
-            background-color: #238636;
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        .root-command {
-            background-color: #da3633;
-        }
-        input {
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-            padding: 8px;
+        .command-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 12px;
             border-radius: 4px;
-            margin-right: 10px;
-            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.2s;
         }
-        button {
-            font-family: 'Courier New', monospace;
+        .command-btn:hover {
+            background-color: #444;
+        }
+        .command-btn.user {
+            background-color: #2E7D32;
+        }
+        .command-btn.root {
+            background-color: #C62828;
+        }
+        .password-prompt {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .password-box {
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+        .password-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 4px;
+        }
+        .password-box button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
         }
         .success {
-            color: #3fb950;
+            color: #4CAF50;
         }
         .error {
-            color: #f85149;
+            color: #f44336;
+        }
+        .warning {
+            color: #FFC107;
+        }
+        #customCommand {
+            width: 100%;
+            padding: 10px;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        #executeCustom {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .server-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-online {
+            background-color: #4CAF50;
+        }
+        .status-offline {
+            background-color: #f44336;
+        }
+        .status-starting {
+            background-color: #FFC107;
         }
     </style>
 </head>
 <body>
+    <h1>Minecraft Server Control Panel</h1>
+    
     <div class="auth-container">
         <button id="userBtn" class="auth-btn active">User Mode</button>
-        <button id="rootBtn" class="auth-btn">Root Mode</button>
+        <button id="rootBtn" class="auth-btn root">Root Mode</button>
     </div>
 
     <div class="terminal">
-        <div id="output">$ Select a mode to begin</div>
+        <div id="output">$ Server control panel initialized
+$ Current mode: User
+$ Server status: <span class="server-status status-offline"></span>OFFLINE</div>
     </div>
 
     <!-- User Command Area -->
     <div id="userCommands" class="command-area active">
-        <h3>User Commands</h3>
-        <button onclick="executeUserCommand()" class="user-command">Run mypy.py (Default Sum)</button>
+        <h2>User Commands</h2>
+        <div class="command-grid">
+            <button onclick="executeCommand('start_server')" class="command-btn user">Start Server</button>
+            <button onclick="executeCommand('stop_server')" class="command-btn user">Stop Server</button>
+            <button onclick="executeCommand('server_status')" class="command-btn user">Check Status</button>
+        </div>
     </div>
 
     <!-- Root Command Area -->
     <div id="rootCommands" class="command-area">
-        <h3>Root Commands</h3>
-        <input type="number" id="customNumber" placeholder="Enter a number">
-        <button onclick="executeRootCommand()" class="root-command">Run mypy.py (Custom Sum)</button>
+        <h2>Root Commands</h2>
+        <div class="command-grid">
+            <button onclick="executeCommand('reload')" class="command-btn root">Reload</button>
+            <button onclick="executeCommand('ban')" class="command-btn root">Ban Player</button>
+            <button onclick="executeCommand('pardon')" class="command-btn root">Pardon Player</button>
+            <button onclick="executeCommand('op')" class="command-btn root">OP Player</button>
+            <button onclick="executeCommand('deop')" class="command-btn root">DeOP Player</button>
+            <button onclick="executeCommand('whitelist')" class="command-btn root">Whitelist</button>
+            <button onclick="executeCommand('save-all')" class="command-btn root">Save World</button>
+            <button onclick="executeCommand('gamemode')" class="command-btn root">Change Gamemode</button>
+            <button onclick="executeCommand('time')" class="command-btn root">Set Time</button>
+            <button onclick="executeCommand('weather')" class="command-btn root">Set Weather</button>
+            <button onclick="executeCommand('give')" class="command-btn root">Give Item</button>
+            <button onclick="executeCommand('teleport')" class="command-btn root">Teleport</button>
+            <button onclick="executeCommand('kick')" class="command-btn root">Kick Player</button>
+        </div>
+        
+        <h3>Custom Command</h3>
+        <input type="text" id="customCommand" placeholder="Enter Minecraft command (e.g., /give @a diamond 1)">
+        <button id="executeCustom" onclick="executeCustomCommand()">Execute</button>
+    </div>
+
+    <!-- Root Password Prompt -->
+    <div id="passwordPrompt" class="password-prompt">
+        <div class="password-box">
+            <h3>Root Access Required</h3>
+            <p>Enter root password:</p>
+            <input type="password" id="rootPassword" placeholder="Password">
+            <button onclick="verifyRootPassword()">Authenticate</button>
+        </div>
     </div>
 
     <script>
+        // Configuration
+        const ROOT_PASSWORD = "minecraft123"; // Change this in production!
+        let currentMode = "user";
+        let isAuthenticated = false;
+        let serverStatus = "offline";
+        
         // DOM Elements
         const outputEl = document.getElementById('output');
         const userBtn = document.getElementById('userBtn');
         const rootBtn = document.getElementById('rootBtn');
         const userCommands = document.getElementById('userCommands');
         const rootCommands = document.getElementById('rootCommands');
-        const customNumberEl = document.getElementById('customNumber');
-
-        // Current mode (default: user)
-        let currentMode = 'user';
+        const passwordPrompt = document.getElementById('passwordPrompt');
+        const rootPasswordInput = document.getElementById('rootPassword');
+        const customCommandInput = document.getElementById('customCommand');
+        const serverStatusIndicator = document.querySelector('.server-status');
 
         // Mode switching
         userBtn.addEventListener('click', () => switchMode('user'));
-        rootBtn.addEventListener('click', () => switchMode('root'));
+        rootBtn.addEventListener('click', () => {
+            if (currentMode === 'root') {
+                switchMode('user');
+            } else {
+                showPasswordPrompt();
+            }
+        });
 
         function switchMode(mode) {
             currentMode = mode;
@@ -119,48 +256,171 @@
             rootBtn.classList.toggle('active', mode === 'root');
             userCommands.classList.toggle('active', mode === 'user');
             rootCommands.classList.toggle('active', mode === 'root');
-            outputEl.innerHTML += `\n$ Switched to ${mode} mode`;
-            outputEl.scrollTop = outputEl.scrollHeight;
+            
+            const statusMessage = mode === 'root' ? 'ROOT (authenticated)' : 'USER';
+            outputEl.innerHTML += `\n$ Switched to ${statusMessage} mode`;
+            scrollOutput();
+        }
+
+        function showPasswordPrompt() {
+            passwordPrompt.style.display = 'flex';
+            rootPasswordInput.focus();
+        }
+
+        function verifyRootPassword() {
+            const password = rootPasswordInput.value;
+            if (password === ROOT_PASSWORD) {
+                isAuthenticated = true;
+                passwordPrompt.style.display = 'none';
+                rootPasswordInput.value = '';
+                switchMode('root');
+                outputEl.innerHTML += `\n<span class="success">$ Root access granted</span>`;
+            } else {
+                outputEl.innerHTML += `\n<span class="error">$ Invalid root password</span>`;
+                rootPasswordInput.value = '';
+            }
+            scrollOutput();
         }
 
         // Command execution
-        function executeUserCommand() {
-            outputEl.innerHTML += `\n$ Executing mypy.py with default values`;
-            simulateExecution('user');
-        }
-
-        function executeRootCommand() {
-            const num = customNumberEl.value;
-            if (!num) {
-                outputEl.innerHTML += `\n<span class="error">$ Error: Please enter a number</span>`;
+        function executeCommand(cmd) {
+            if (currentMode === 'root' && !isAuthenticated) {
+                outputEl.innerHTML += `\n<span class="error">$ Authentication required for root commands</span>`;
+                scrollOutput();
                 return;
             }
-            outputEl.innerHTML += `\n$ Executing mypy.py with custom value: ${num}`;
-            simulateExecution('root', num);
+
+            outputEl.innerHTML += `\n$ Executing: ${cmd}`;
+            
+            // Simulate command execution
+            setTimeout(() => {
+                let result = simulateCommand(cmd);
+                outputEl.innerHTML += `\n<span class="success">${result}</span>`;
+                scrollOutput();
+            }, 500);
         }
 
-        // Simulate command execution
-        function simulateExecution(mode, customNum = null) {
-            // Default numbers for sum
-            const a = 10;
-            const b = 20;
-            let sum;
-
-            if (mode === 'user') {
-                sum = a + b;
-                outputEl.innerHTML += `\n<span class="success">$ Result: ${a} + ${b} = ${sum}</span>`;
-            } else {
-                sum = a + b + parseInt(customNum);
-                outputEl.innerHTML += `\n<span class="success">$ Result: ${a} + ${b} + ${customNum} = ${sum}</span>`;
+        function executeCustomCommand() {
+            const cmd = customCommandInput.value.trim();
+            if (!cmd) return;
+            
+            if (currentMode === 'root' && !isAuthenticated) {
+                outputEl.innerHTML += `\n<span class="error">$ Authentication required for root commands</span>`;
+                scrollOutput();
+                return;
             }
 
-            outputEl.innerHTML += '\n$ ';
+            outputEl.innerHTML += `\n$ Executing: ${cmd}`;
+            customCommandInput.value = '';
+            
+            // Simulate command execution
+            setTimeout(() => {
+                let result = simulateCustomCommand(cmd);
+                outputEl.innerHTML += `\n<span class="success">${result}</span>`;
+                scrollOutput();
+            }, 500);
+        }
+
+        // Command simulation
+        function simulateCommand(cmd) {
+            switch (cmd) {
+                case 'start_server':
+                    serverStatus = "starting";
+                    updateServerStatus();
+                    setTimeout(() => {
+                        serverStatus = "online";
+                        updateServerStatus();
+                        outputEl.innerHTML += `\n<span class="success">$ Server started successfully</span>`;
+                        scrollOutput();
+                    }, 3000);
+                    return "Starting server... (java -Xmx16G -Xms4G -jar server.jar nogui)";
+                
+                case 'stop_server':
+                    serverStatus = "offline";
+                    updateServerStatus();
+                    return "Server stopped";
+                
+                case 'server_status':
+                    return `Server status: ${serverStatus.toUpperCase()}`;
+                
+                case 'reload':
+                    return "Reloaded server configuration";
+                
+                case 'ban':
+                    return "Player banned successfully";
+                
+                case 'pardon':
+                    return "Player pardoned successfully";
+                
+                case 'op':
+                    return "Player granted OP status";
+                
+                case 'deop':
+                    return "Player OP status revoked";
+                
+                case 'whitelist':
+                    return "Whitelist updated";
+                
+                case 'save-all':
+                    return "World data saved";
+                
+                case 'gamemode':
+                    return "Gamemode changed";
+                
+                case 'time':
+                    return "Time set";
+                
+                case 'weather':
+                    return "Weather changed";
+                
+                case 'give':
+                    return "Item given to player";
+                
+                case 'teleport':
+                    return "Player teleported";
+                
+                case 'kick':
+                    return "Player kicked";
+                
+                default:
+                    return `Command '${cmd}' executed`;
+            }
+        }
+
+        function simulateCustomCommand(cmd) {
+            if (cmd.startsWith('/')) {
+                return `Executed Minecraft command: ${cmd}`;
+            }
+            return `Command output: ${cmd}`;
+        }
+
+        function updateServerStatus() {
+            const statusElement = document.querySelector('.server-status');
+            statusElement.className = 'server-status';
+            
+            switch (serverStatus) {
+                case 'online':
+                    statusElement.classList.add('status-online');
+                    break;
+                case 'offline':
+                    statusElement.classList.add('status-offline');
+                    break;
+                case 'starting':
+                    statusElement.classList.add('status-starting');
+                    break;
+            }
+            
+            document.querySelector('.server-status').nextSibling.textContent = serverStatus.toUpperCase();
+        }
+
+        function scrollOutput() {
             outputEl.scrollTop = outputEl.scrollHeight;
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             outputEl.innerHTML += '\n$ ';
+            updateServerStatus();
         });
     </script>
 </body>
