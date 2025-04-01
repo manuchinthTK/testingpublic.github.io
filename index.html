@@ -28,7 +28,7 @@
     }
 
     // Auto-load latest results on page load
-    fetch('https://raw.githubusercontent.com/testingpublic/testingpublic.github.io/main/scripts/output.txt?t=${Date.now()}')
+    fetch('https://raw.githubusercontent.com/manuchinthTK/testingpublic.github.io/main/scripts/output.txt?t=${Date.now()}')
         .then(r => r.text())
         .then(t => {
             if(t.trim()) document.getElementById('output').textContent = t;
