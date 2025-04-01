@@ -4,7 +4,7 @@ async function runScript() {
 
     try {
         // Replace with YOUR Personal Access Token (PAT)
-        const PAT = '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'; // ⚠️ Never commit real tokens!
+        const PAT = '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'; // ⚠️ Never commit real tokens!
         
         const response = await fetch(
             'https://api.github.com/repos/manuchinthTK/testingpublic.github.io/actions/workflows/run_script.yml/dispatches',
