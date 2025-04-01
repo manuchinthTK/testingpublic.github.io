@@ -5,7 +5,7 @@ async function runScript() {
     try {
         // This URL will trigger the workflow dispatch event
         const response = await fetch(
-            `https://api.github.com/repos/manuchinthTK/testingpublic.github.io/workflows/run_script.yml/dispatches`,
+            `https://api.github.com/repos/manuchinthTK/testingpublic.github.io/actions/workflows/run_script.yml/dispatches`,
             {
                 method: 'POST',
                 headers: {
