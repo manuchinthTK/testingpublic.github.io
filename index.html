@@ -1,17 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Python Runner</title>
-    <script src="script.js"></script>
+    <title>Python Script Runner</title>
     <style>
-        body { font-family: Arial, margin: 20px; }
-        button { padding: 10px 15px; font-size: 16px; }
-        #output { margin-top: 20px; white-space: pre-wrap; }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        button { padding: 10px 15px; font-size: 16px; background: #2ea44f; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        #output { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 6px; min-height: 100px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
-    <h1>Run Python via GitHub Actions</h1>
-    <button onclick="runScript()">Run Script</button>
-    <div id="output">Click the button to run.</div>
+    <h1>Python Script Runner</h1>
+    <button onclick="showInstructions()">Run Python Script</button>
+    <div id="output">Click the button for instructions</div>
+
+    <script>
+    function showInstructions() {
+        document.getElementById('output').innerHTML = `
+            <h3>How to run the script:</h3>
+            <ol>
+                <li>Go to <a href="https://github.com/testingpublic/testingpublic.github.io/actions/workflows/run_script.yml" target="_blank">GitHub Actions</a></li>
+                <li>Click "Run workflow" → "Run workflow"</li>
+                <li>Wait ~1 minute</li>
+                <li><a href="#" onclick="location.reload()">Refresh this page</a> to see results</li>
+            </ol>
+            <p>Alternatively, push changes to <code>scripts/mypy.py</code> to auto-run.</p>
+        `;
+    }
+
+    // Auto-load latest results on page load
+    fetch('https://raw.githubusercontent.com/testingpublic/testingpublic.github.io/main/scripts/output.txt?t=${Date.now()}')
+        .then(r => r.text())
+        .then(t => {
+            if(t.trim()) document.getElementById('output').textContent = t;
+        });
+    </script>
 </body>
 </html>
