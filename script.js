@@ -1,33 +1,33 @@
-document.getElementById('runBtn').addEventListener('click', async () => {
-    const output = document.getElementById('output');
-    output.textContent = "Starting execution...";
+from flask import Flask, request, jsonify
+import os
+import requests
 
-    try {
-        const response = await fetch('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/dispatches', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/vnd.github.everest-preview+json',
-                'Authorization': 'token YOUR_GITHUB_TOKEN',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ event_type: 'run_python_script' })
-        });
+app = Flask(__name__)
 
-        if (response.ok) {
-            output.textContent = "Workflow triggered! Waiting for results...";
-            setTimeout(checkResults, 5000); // Wait before checking results
-        } else {
-            output.textContent = "Error: " + (await response.text());
-        }
-    } catch (error) {
-        output.textContent = `Error: ${error.message}`;
+@app.route('/trigger-workflow', methods=['POST'])
+def trigger_workflow():
+    GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+    if not GITHUB_TOKEN:
+        return jsonify({"error": "Missing GitHub token"}), 500
+
+    headers = {
+        'Accept': 'application/vnd.github.everest-preview+json',
+        'Authorization': f'token {GITHUB_TOKEN}',
+        'Content-Type': 'application/json'
     }
-});
 
-async function checkResults() {
-    const output = document.getElementById('output');
-    const response = await fetch(
-        'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/scripts/output.txt?t=' + Date.now()
-    );
-    output.textContent = await response.text();
-}
+    payload = {"event_type": "run_python_script"}
+
+    response = requests.post(
+        'https://api.github.com/repos/manuchinthTK/testingpublic.github.io/dispatches',
+        headers=headers,
+        json=payload
+    )
+
+    if response.status_code == 204:
+        return jsonify({"message": "Workflow triggered successfully"})
+    else:
+        return jsonify({"error": response.text}), response.status_code
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
