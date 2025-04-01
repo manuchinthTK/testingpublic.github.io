@@ -10,7 +10,7 @@
     <button onclick="startPython()">Start</button>
     <script>
         function startPython() {
-            fetch('/start-python', { method: 'POST' })
+            fetch('/start-python', { method: 'POST' })  // Ensure method is POST
                 .then(response => response.text())
                 .then(data => alert(data))
                 .catch(error => console.error('Error:', error));
