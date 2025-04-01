@@ -1,32 +1,25 @@
-name: Execute Python on Button Click
+name: Python Script Runner
 
-on:
-  repository_dispatch:
-    types: [run_python_script]
+on: [workflow_dispatch]
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    
+    # Load environment variables from GitHub Secrets
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auto-injected token
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CUSTOM_VAR: ${{ secrets.MY_VAR }}
     
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+      # Alternative: Load env file from a secure location
+      - name: Load environment variables
+        run: |
+          echo "Loading env vars..."
+          echo "SECRET_VALUE=${{ secrets.SECRET_VALUE }}" >> $GITHUB_ENV
           
       - name: Run Python script
         run: |
-          python scripts/mypy.py > scripts/output.txt
-          echo "Last run: $(date -u)" >> scripts/output.txt
-          
-      - name: Commit results
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add scripts/output.txt
-          git commit -m "Update script output [skip ci]" || echo "No changes"
-          git push
+          python scripts/mypy.py
