@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, send_file
 import subprocess
 import sys
+from werkzeug.exceptions import HTTPException
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -11,21 +12,19 @@ def serve_html():
 @app.route('/run_script')
 def run_script():
     try:
-        # Run the Python script with timeout (30 seconds)
         result = subprocess.run(
-            [sys.executable, 'mypy.py'],  # Uses the same Python interpreter
+            [sys.executable, 'mypy.py'],
             capture_output=True,
             text=True,
-            timeout=30,  # Prevents hanging
+            timeout=30,
             check=True
         )
         
-        response = {
+        return jsonify({
             'success': True,
             'output': result.stdout,
             'error': result.stderr
-        }
-        return jsonify(response)
+        })
         
     except subprocess.TimeoutExpired:
         return jsonify({
@@ -36,7 +35,7 @@ def run_script():
     except subprocess.CalledProcessError as e:
         return jsonify({
             'success': False,
-            'error': f'Script failed with return code {e.returncode}',
+            'error': f'Script failed (code {e.returncode})',
             'output': e.stdout,
             'stderr': e.stderr
         }), 500
@@ -46,6 +45,20 @@ def run_script():
             'success': False,
             'error': f'Unexpected error: {str(e)}'
         }), 500
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({
+        'success': False,
+        'error': 'Endpoint not found'
+    }), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({
+        'success': False,
+        'error': 'Internal server error'
+    }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
