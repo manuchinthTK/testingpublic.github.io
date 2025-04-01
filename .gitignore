@@ -1,13 +1,17 @@
-# .gitignore
+# Ignore environment variables
+.env
 
-# Exclude the entire .env directory and its contents
-.github/env/*
-
-# Alternatively, exclude all .env files (including in subdirectories)
-*.env
-
-# Optional: Also exclude common IDE/editor files
-.idea/
-.vscode/
+# Ignore Python cache files
 __pycache__/
 *.pyc
+*.pyo
+
+# Ignore workflow logs (optional)
+.github/workflows/*.log
+
+# Ignore VSCode settings (optional)
+.vscode/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
