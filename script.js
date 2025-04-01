@@ -9,7 +9,7 @@ async function runScript() {
             {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'token YOUR_PAT',
+                    'Authorization': 'token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',
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
