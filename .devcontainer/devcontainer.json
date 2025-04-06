@@ -1,0 +1,6 @@
+// .devcontainer/devcontainer.json
+{
+  "name": "Python Runner",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postStartCommand": "sh -c 'python3 main.py'"
+}
