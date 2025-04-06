@@ -1,0 +1,47 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Launch Codespace</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: white;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: sans-serif;
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Auto-Run Python in Codespace</h1>
+  <button onclick="launchCodespace()">Execute</button>
+
+  <script>
+    function launchCodespace() {
+      const username = "your-username";
+      const repo = "your-repo";
+      const branch = "main"; // or other branch name
+
+      const url = `https://github.com/codespaces/new?repo=${username}/${repo}&ref=${branch}`;
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>
